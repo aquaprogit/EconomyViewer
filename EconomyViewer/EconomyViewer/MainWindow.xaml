@@ -9,10 +9,11 @@
         Title="Economy Viewer"
         Height="600"
         Width="1000"
-        ResizeMode="NoResize"
+        ResizeMode="CanMinimize"
         WindowStyle="None"
         WindowStartupLocation="CenterScreen"
-        FontSize="24">
+        FontSize="24"
+        Loaded="Window_Loaded">
     <Window.Resources>
         <local:IntToBoolConverter x:Key="intToBoolConverter" />
         <BooleanToVisibilityConverter x:Key="boolToVisibilityConverter" />
@@ -68,8 +69,16 @@
             <Setter Property="HorizontalContentAlignment"
                     Value="Center" />
         </Style>
-        <Style x:Key="Close_btn"
+        <Style x:Key="WindowButtonStyle"
                TargetType="{x:Type Button}">
+            <Setter Property="VerticalAlignment"
+                    Value="Top" />
+            <Setter Property="Width"
+                    Value="45" />
+            <Setter Property="Height"
+                    Value="45" />
+            <Setter Property="BorderThickness"
+                    Value="0" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
@@ -98,8 +107,85 @@
         </Style>
     </Window.Resources>
     <Grid>
+        <Grid x:Name="WorkingPanel"
+              PreviewMouseLeftButtonUp="WorkingPanel_PreviewMouseLeftButtonUp"
+              Panel.ZIndex="100"
+              Margin="65,0,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition Height="9*" />
+            </Grid.RowDefinitions>
+            <!--Header-->
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="45" />
+                    <ColumnDefinition Width="45" />
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="Grid_Header"
+                           Text=""
+                           FontSize="34"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center" />
+                <Button x:Name="MinimizeWindow_Button"
+                        Grid.Column="1"
+                        Style="{StaticResource WindowButtonStyle}"
+                        Click="MinimizeWindow_Button_Click">
+                    <Button.Background>
+                        <ImageBrush ImageSource="Assets/minimize.png"
+                                    Stretch="Fill" />
+                    </Button.Background>
+                </Button>
+                <Button x:Name="CloseWindow_Button"
+                        Grid.Column="2"
+                        Style="{StaticResource WindowButtonStyle}"
+                        Click="CloseWindow_Button_Click">
+                    <Button.Background>
+                        <ImageBrush ImageSource="Assets/close1.png"
+                                    Stretch="Fill" />
+                    </Button.Background>
+                </Button>
+            </Grid>
+            <Grid Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="45" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="25" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="50" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="40" />
+                </Grid.ColumnDefinitions>
+                <Grid Grid.Row="1"
+                      Grid.Column="1">
+                    <Grid.Resources>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="HorizontalAlignment"
+                                    Value="Left" />
+                            <Setter Property="VerticalAlignment"
+                                    Value="Center" />
+                        </Style>
+                    </Grid.Resources>
+                    <Grid x:Name="Main_Grid">
+                        
+                    </Grid>
+                    <Grid x:Name="Exchange_Grid">
+
+                    </Grid>
+                    <Grid x:Name="Edit_Grid">
+
+                    </Grid>
+                    <Grid x:Name="Add_Grid">
+
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Grid>
+        <!--#region Navigation Bar-->
         <!--// Navigation Panel //-->
         <Grid x:Name="NavigationPanel"
+              Panel.ZIndex="101"
               HorizontalAlignment="Left"
               Width="65"
               Background="#FFC4F7FF">
@@ -292,5 +378,6 @@
                 </ListView>
             </StackPanel>
         </Grid>
+        <!--#endregion-->
     </Grid>
 </Window>
