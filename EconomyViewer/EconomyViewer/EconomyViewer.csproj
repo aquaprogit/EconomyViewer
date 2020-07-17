@@ -75,6 +75,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Utils\DataBaseWorker.cs" />
+    <Compile Include="Utils\Extentions.cs" />
     <Compile Include="Utils\Item.cs" />
     <Compile Include="Utils\ItemList.cs" />
     <Compile Include="Utils\MyMessageBox.xaml.cs">
