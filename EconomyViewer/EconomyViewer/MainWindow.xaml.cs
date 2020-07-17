@@ -24,5 +24,18 @@ namespace EconomyViewer
         {
             InitializeComponent();
         }
+        #region Navigation Bar controls
+        private void ListViewItem_MouseEnter(object sender, MouseEventArgs e)
+        {
+            List<ToolTip> toolTips = new List<ToolTip>()
+            {
+                toolTipAdd,
+                toolTipEdit,
+                toolTipExchange,
+                toolTipHome
+            };
+            toolTips.ForEach(c => c.Visibility = ToggleNavBar_ToggleButton.IsChecked.Value ? Visibility.Collapsed : Visibility.Visible);
+        }
+        #endregion
     }
 }
