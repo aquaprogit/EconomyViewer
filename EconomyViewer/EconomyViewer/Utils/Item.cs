@@ -8,13 +8,14 @@ namespace EconomyViewer.Utils
     /// <summary>
     /// Класс представление для всех предметов экономики SMC.
     /// </summary>
-    internal class Item : INotifyPropertyChanged
+    public class Item : INotifyPropertyChanged
     {
         private string header;
         private int count;
         private decimal price;
         private string mod;
 
+        public string StringFormat => ToString();
         /// <summary>
         /// ID предмета в базе данных. Доступ только для чтения
         /// </summary>
@@ -26,7 +27,8 @@ namespace EconomyViewer.Utils
         {
             get => header;
 
-            set {
+            set
+            {
                 header = value;
                 OnPropertyChanged("Header");
             }
@@ -38,7 +40,8 @@ namespace EconomyViewer.Utils
         {
             get => count;
 
-            set {
+            set
+            {
                 count = value;
                 OnPropertyChanged("Count");
             }
@@ -50,7 +53,8 @@ namespace EconomyViewer.Utils
         {
             get => price;
 
-            set {
+            set
+            {
                 price = value;
                 OnPropertyChanged("Price");
             }
@@ -61,7 +65,8 @@ namespace EconomyViewer.Utils
         public string Mod
         {
             get => mod;
-            set {
+            set
+            {
                 mod = value;
                 OnPropertyChanged("Mod");
             }
@@ -123,13 +128,12 @@ namespace EconomyViewer.Utils
         {
             if (Regex.IsMatch(value, "(.+) ([0-9]+) шт. - ([0-9]+)$"))
             {
-                string itemName = Regex.Match(value, @"(.+) ([0-9]+) шт. - ([0-9]+)$").Groups[1].Value;
-                int itemCount = Convert.ToInt32(Regex.Match(value, @"(.+) ([0-9]+) шт. - ([0-9]+)$").Groups[2].Value);
-                int itemPrice = Convert.ToInt32(Regex.Match(value, @"(.+) ([0-9]+) шт. - ([0-9]+)$").Groups[3].Value);
-                string itemMod = mod;
+                var comp = Regex.Match(value, @"(.+) ([0-9]+) шт. - ([0-9]+)$").Groups;
+                string itemName = comp[1].Value;
+                int itemCount = Convert.ToInt32(comp[2].Value);
+                int itemPrice = Convert.ToInt32(comp[3].Value);
 
-                Item item = new Item(itemName, itemCount, itemPrice, itemMod);
-                return item;
+                return new Item(itemName, itemCount, itemPrice, mod);
             }
             return null;
         }

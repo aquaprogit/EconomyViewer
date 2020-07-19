@@ -11,6 +11,16 @@ namespace EconomyViewer.Utils
 {
     static class Extentions
     {
+        public static Item IncreaseItem(this Item self, int newCount)
+        {
+            return new Item()
+            {
+                Count = newCount,
+                Price = Convert.ToDecimal(self.Price / self.Count * newCount),
+                Header = self.Header,
+                Mod = self.Mod
+            };
+        }
         public static void ClearSelection(this ComboBox comboBox)
         {
             TextBox textBox = comboBox.Template.FindName("PART_EditableTextBox", comboBox) as TextBox;

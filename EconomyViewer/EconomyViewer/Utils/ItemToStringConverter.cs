@@ -8,18 +8,20 @@ using System.Windows.Data;
 
 namespace EconomyViewer.Utils
 {
-    class IntToBoolConverter : IValueConverter
+    class ItemToStringConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (targetType != null)
-                return System.Convert.ToInt32(value) != -1;
-            return false;
+            if (value is Item item)
+            {
+                return item.ToString();
+            }
+            return "";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            return Item.FromString(value.ToString(), null);
         }
     }
 }

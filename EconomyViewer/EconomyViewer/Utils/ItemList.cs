@@ -1,17 +1,20 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 
 namespace EconomyViewer.Utils
 {
-    internal class ItemList<T> : ICollection<Item> where T : Item
+    public class ItemList<T> : ICollection<Item> where T : Item
     {
         private readonly List<Item> itemList = new List<Item>();
         public int Count { get => itemList.Count; }
-        public bool IsReadOnly { get; }
+        public bool IsReadOnly { get => false; }
         public delegate void DataChangedHandler();
         public event DataChangedHandler OnDataChanged;
+
         public void Add(Item item)
         {
             if (itemList.Contains(item))
