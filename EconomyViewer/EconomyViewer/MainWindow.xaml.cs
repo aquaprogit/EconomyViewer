@@ -1,22 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Interop;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-
+using System.Windows.Threading;
 using EconomyViewer.Utils;
+using EconomyViewer.ViewModels;
 
 namespace EconomyViewer
 {
@@ -25,15 +20,26 @@ namespace EconomyViewer
     /// </summary>
     public partial class MainWindow : Window
     {
-        private List<string> Headers = new List<string>();
-        private List<string> FilterMod = new List<string>();
-        public ItemContainer ItemContainer { get; set; } = new ItemContainer();
-        public string SelectedServer
-        {
-            get => App.Server;
-            set => App.Server = value;
-        }
+        private ObservableCollection<string> FilterMod = new ObservableCollection<string>();
+        public ServerViewModel ServerViewModel { get; set; } = new ServerViewModel();
+        public ItemViewModel ItemViewModel { get; set; } = new ItemViewModel();
+        public bool IsFastAdding { get; set; } = false;
         #region Private methods
+        private void UpdateDispatcher()
+        {
+            DispatcherFrame frame = new DispatcherFrame(true);
+            Dispatcher.CurrentDispatcher.BeginInvoke
+            (
+            DispatcherPriority.Background,
+            (SendOrPostCallback)delegate (object arg)
+            {
+                var f = arg as DispatcherFrame;
+                f.Continue = false;
+            },
+            frame
+            );
+            Dispatcher.PushFrame(frame);
+        }
         private void RefillFilterCheckBoxes()
         {
             MainFilterList_ListView.Items.Clear();
@@ -42,62 +48,26 @@ namespace EconomyViewer
         }
         private void App_ServerChanged(object sender, EventArgs e)
         {
-            MainFilterList_ListView.Items.Clear();
-            ItemContainer.ItemList.Clear();
-            Headers.Clear();
             if (DataBaseWorker.GetData(App.Server).Count != 0)
             {
                 RefillFilterCheckBoxes();
-
-                foreach (Item item in DataBaseWorker.GetData(App.Server))
-                {
-                    ItemContainer.ItemList.Add(item);
-                    Headers.Add(item.Header);
-                }
             }
-            MainCheckAllFilter_CheckBox.IsEnabled = Headers.Count != 0;
-            MainSelectItem_ComboBox.ItemsSource = Headers;
-            MainSelectItem_ComboBox.MaxDropDownHeight = Headers.Count != 0 ? 360 : 0;
+            FilterMod.Clear();
             RefillFilterCheckBoxes();
         }
-        private void SearchToAutoComplete(ComboBox comboBox)
+        private void FilterMod_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            if (comboBox.Text == "")
-            {
-                comboBox.ItemsSource = Headers;
-                comboBox.Text = "";
-                comboBox.IsDropDownOpen = false;
-                ItemContainer.SelectedItem = null;
-                return;
-            }
-            var list = Search(comboBox.Text, Headers);
-            comboBox.ItemsSource = list;
-            comboBox.IsDropDownOpen = list.Count != 0;
-            comboBox.SelectedIndex = -1;
-        }
-
-        private List<string> Search(string target, IEnumerable<string> coll)
-        {
-            List<string> result = new List<string>();
-            if (coll.Where(c => c.ToUpper().Contains(target.ToUpper())).Count() != 0)
-            {
-                foreach (var item in coll)
-                {
-                    if (item.ToUpper().Contains(target.ToUpper()))
-                        result.Add(item);
-                }
-                return result;
-            }
-            return new List<string>();
+            ItemViewModel.FilterMod = FilterMod.ToList();
         }
         #endregion
         public MainWindow()
         {
             InitializeComponent();
+            FilterMod.CollectionChanged += FilterMod_CollectionChanged;
+            MainSelectItem_ComboBox.DataContext = ItemViewModel;
             DataContext = this;
 
             App.ServerChanged += App_ServerChanged;
-            MainSelectServer_ComboBox.ItemsSource = DataBaseWorker.GetAllTables();
             App_ServerChanged(null, null);
         }
         #region Navigation Bar controls
@@ -150,78 +120,26 @@ namespace EconomyViewer
         {
             if (MainSelectServer_ComboBox.SelectedItem != null)
             {
-                if (ItemContainer.ItemList.Count == 0 && IsLoaded && Main_Grid.Visibility == Visibility.Visible)
+                if (ItemViewModel.ItemList.Count == 0 && IsLoaded && Main_Grid.Visibility == Visibility.Visible)
                 {
                     MessageBoxResult result = MyMessageBox.Show("Таблица не содержит данных.\nХотите добавить их?", "Подтверждение", MessageBoxButton.YesNo, MessageBoxImage.Question);
                     if (result == MessageBoxResult.Yes)
                         MenuItem_Click(new ListViewItem() { Tag = "Add" }, null);
                     return;
                 }
-
             }
         }
-
         private void MainSelectItem_ComboBox_GotFocus(object sender, RoutedEventArgs e)
         {
             if (e.OriginalSource.GetType() == typeof(ComboBoxItem))
                 return;
-            if (FilterMod.Count != 0)
-                MainSelectItem_ComboBox.ItemsSource = Headers.Where(c => ItemContainer.ItemList.First(b => b.Header == c).Mod.IsOneOf(FilterMod.ToArray()));
-            else
-                MainSelectItem_ComboBox.ItemsSource = Headers;
-            MainSelectItem_ComboBox.SelectedIndex = -1;
             if (MainSelectItem_ComboBox.ItemsSource.Cast<string>().Count() == 0)
             {
-                MainSelectItem_ComboBox.MaxDropDownHeight = 0;
-
                 MessageBoxResult result = MyMessageBox.Show("Таблица не содержит данных.\nХотите добавить их?", "Подтверждение", MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (result == MessageBoxResult.Yes)
                     MenuItem_Click(new ListViewItem() { Tag = "Add" }, null);
             }
-            else
-            {
-                MainSelectItem_ComboBox.MaxDropDownHeight = 360;
-            }
         }
-        private void MainSelectItem_ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (MainSelectItem_ComboBox.SelectedItem == null)
-            {
-                //ToViewSelectedItemPrice_TextBlock.Text = "1";
-                //ToViewSelectedItemCount_IntUpDown.Value = 1;
-                //ToViewSelectedItemName_TextBlock.Text = "";
-                MainToCopyValue_TextBox.Text = "";
-                MainSelectItem_ComboBox.SelectedIndex = -1;
-                return;
-            }
-            ItemContainer.SelectedItem = ItemContainer.ItemList.ToList().Find(i => i.Header == MainSelectItem_ComboBox.SelectedItem.ToString());
-            Debug.WriteLine(ItemContainer.SelectedItem.ToString());
-            if (MainSelectItem_ComboBox.Template.FindName("PART_EditableTextBox", MainSelectItem_ComboBox) is TextBox editablePart)
-            {
-                editablePart.SelectionLength = 0;
-            }
-            MainSelectItem_ComboBox.MaxDropDownHeight = 360;
-            e.Handled = true;
-        }
-        private void MainSelectItem_ComboBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            SearchToAutoComplete(MainSelectItem_ComboBox);
-        }
-
-        private void MainSelectItem_ComboBox_PreviewKeyDown(object sender, KeyEventArgs e)
-        {
-        }
-        private void MainSelectItem_ComboBox_DropDownOpened(object sender, EventArgs e)
-        {
-            if (MainSelectItem_ComboBox.ItemsSource.Cast<string>().Count() == 0)
-                MainSelectItem_ComboBox.IsDropDownOpen = false;
-            else
-            {
-                MainSelectItem_ComboBox.MaxDropDownHeight = 360;
-            }
-            MainSelectItem_ComboBox.ClearSelection();
-        }
-
         private void MainCheckAllFilter_CheckBox_Click(object sender, RoutedEventArgs e)
         {
             List<CheckBox> filterCheckBoxes = MainFilterList_ListView.Items.Cast<CheckBox>().ToList();
@@ -236,9 +154,7 @@ namespace EconomyViewer
                 MainCheckAllFilter_CheckBox.IsChecked = MainFilterList_ListView.Items.Cast<CheckBox>().First().IsChecked;
             }
             else
-            {
                 MainCheckAllFilter_CheckBox.IsChecked = false;
-            }
             FilterMod.Clear();
             foreach (var item in MainFilterList_ListView.Items.Cast<CheckBox>().ToList())
             {
@@ -249,31 +165,144 @@ namespace EconomyViewer
 
         private void MainCopyValue_Button_Click(object sender, RoutedEventArgs e)
         {
-
-        }
-
-        private void SelectedItemCount_IntUpDown_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-        {
-
+            Clipboard.SetText(MainToCopyValue_TextBox.Text);
         }
 
         private void RemoveFromSumUp_Button_Click(object sender, RoutedEventArgs e)
         {
-
+            ItemViewModel.ToSumUpItems.RemoveAt(ItemViewModel.ToSumUpItems.Count - 1);
+            MainToSumUpContainer_RichTextBox.Document.Blocks.Clear();
+            foreach (var item in ItemViewModel.ToSumUpItems)
+                MainToSumUpContainer_RichTextBox.Document.Blocks.Add(new Paragraph(new Run(item.ToString())));
+            MainToSumUpContainer_RichTextBox.ScrollToEnd();
         }
 
         private void AddToSumUp_Button_Click(object sender, RoutedEventArgs e)
         {
-
+            ItemViewModel.ToSumUpItems.Add(ItemViewModel.SelectedItem);
+            MainToSumUpContainer_RichTextBox.Document.Blocks.Clear();
+            foreach (var item in ItemViewModel.ToSumUpItems)
+                MainToSumUpContainer_RichTextBox.Document.Blocks.Add(new Paragraph(new Run(item.ToString())));
+            MainToSumUpContainer_RichTextBox.ScrollToEnd();
         }
-
+        
         private void ClearFromSumUp_Button_Click(object sender, RoutedEventArgs e)
         {
-
+            ItemViewModel.ToSumUpItems.Clear();
+            MainToSumUpContainer_RichTextBox.Document.Blocks.Clear();
         }
-
-
         #endregion
 
+        private void ToAdd_Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (IsFastAdding)
+            {
+                string data = new TextRange(ToAddData_RichTextBox.Document.ContentStart, ToAddData_RichTextBox.Document.ContentEnd).Text;
+                string mod = ToFastAddItemMod_ComboBox.Text;
+                if (data.Length == 0)
+                {
+                    MyMessageBox.Show("Необходимо заполнить все поля!" +
+                        "\nПоле \"Данные\" было пустое.", "Недостаточно данных", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ToAddData_RichTextBox.Focus();
+                    return;
+                }
+                else if (mod == "")
+                {
+                    MyMessageBox.Show("Необходимо заполнить все поля!" +
+                        "\nПоле \"Мод\" было пустое.", "Недостаточно данных", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ToFastAddItemMod_ComboBox.Focus();
+                    return;
+                }
+                else if (DataBaseWorker.GetOnlyColumnList(App.Server, "i_mod").Contains(mod) == false)
+                {
+                    var result = MyMessageBox.Show("Вы указали в поле \'Мод\' значение, которого ещё нет в таблице." +
+                        "\nХотите добавить новый тип значений для \'Мод\'", "Изменение данных", MessageBoxButton.YesNo, MessageBoxImage.Information);
+                    if (result != MessageBoxResult.Yes)
+                        return;
+                }
+                int success = 0;
+                List<string> errorList = new List<string>();
+                foreach (var item in data.Split(new char[] { '\n' }, options: StringSplitOptions.RemoveEmptyEntries))
+                {
+                    ToAddData_RichTextBox.ScrollToHome();
+                    ToAddData_RichTextBox.IsEnabled = false;
+                    Mouse.OverrideCursor = Cursors.Wait;
+                    string clearItem = item.Remove(item.IndexOf('\r'));
+                    if (clearItem == "")
+                        continue;
+                    if (Regex.IsMatch(clearItem, @"(.+) ([0-9]+) шт. - ([0-9]+)$"))
+                    {
+                        Item newItem = Item.FromString(clearItem, mod);
+                        if (ItemViewModel.ItemList.Contains(newItem) == false)
+                        {
+                            DataBaseWorker.InsertData(App.Server, Item.FromString(clearItem, mod));
+                            success++;
+                        }
+                        ToAddData_RichTextBox.Document.Blocks.Remove(ToAddData_RichTextBox.Document.Blocks.FirstBlock);
+                        UpdateDispatcher();
+                    }
+                    else
+                    {
+                        errorList.Add(clearItem);
+                        Debug.WriteLine(clearItem);
+                    }
+                }
+                ToAddData_RichTextBox.IsEnabled = true;
+                Mouse.OverrideCursor = Cursors.Arrow;
+                if (errorList.Count == 0)
+                {
+                    if (success > 0)
+                        MyMessageBox.Show($"{success} строк были успешно добавлены!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                    else
+                    {
+                        MyMessageBox.Show($"Таблица уже содержит все эти данные", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                        ToAddData_RichTextBox.Document.Blocks.Clear();
+                        ToFastAddItemMod_ComboBox.Text = "";
+                    }
+                    RefillFilterCheckBoxes();
+                }
+                else
+                    MyMessageBox.Show($"{errorList.Count} строк не были добавлены. \nПроверьте их валидность, или воспользуйтесь обычным режимом добавления.", "Неверный формат", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            else
+            {
+                if (ToAddItemName_TextBox.Text == "")
+                {
+                    MyMessageBox.Show("Необходимо заполнить все поля!\nПоле \"Название\" было пустое.", "Недостаточно данных", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ToAddItemName_TextBox.Focus();
+                    return;
+                }
+                if (ToAddItemMod_ComboBox.SelectedIndex == -1 && ToAddItemMod_ComboBox.Text == "")
+                {
+                    MyMessageBox.Show("Необходимо заполнить все поля!\nПоле \"Мод\" было пустое.", "Недостаточно данных", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ToAddItemMod_ComboBox.Focus();
+                    return;
+                }
+                if (ToAddItemMod_ComboBox.Text != "" && !ServerViewModel.Mods.Contains(ToAddItemMod_ComboBox.Text))
+                {
+                    var result = MyMessageBox.Show("Вы указали в поле \'Мод\' значение, которого ещё нет в таблице.\nХотите добавить новый тип значений для \'Мод\'", "Изменение данных", MessageBoxButton.YesNo, MessageBoxImage.Information);
+                    if (result != MessageBoxResult.Yes)
+                        return;
+                }
+
+                Item newItem = new Item()
+                {
+                    Header = ToAddItemName_TextBox.Text,
+                    Count = ToAddItemCount_IntUpDown.Value.Value,
+                    Price = ToAddItemPrice_IntUpDown.Value.Value,
+                    Mod = ToAddItemMod_ComboBox.Text
+                };
+                if (ItemViewModel.ItemList.Contains(newItem) == false)
+                {
+                    DataBaseWorker.InsertData(App.Server, newItem);
+                    MyMessageBox.Show("Добавление новых данных прошло успешно!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                    RefillFilterCheckBoxes();
+                }
+                else
+                    MyMessageBox.Show("Таблица уже содержит такой объект.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                ToAddItemName_TextBox.Text = ToAddItemMod_ComboBox.Text = "";
+                ToAddItemCount_IntUpDown.Value = ToAddItemPrice_IntUpDown.Value = 1;
+            }
+        }
     }
 }

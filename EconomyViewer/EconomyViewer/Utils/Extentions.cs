@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -11,12 +13,18 @@ namespace EconomyViewer.Utils
 {
     static class Extentions
     {
+        public static ObservableCollection<T> ToObservableCollection<T>(this IEnumerable<T> coll)
+        {
+            var c = new ObservableCollection<T>();
+            foreach (var e in coll) c.Add(e);
+            return c;
+        }
         public static Item IncreaseItem(this Item self, int newCount)
         {
             return new Item()
             {
                 Count = newCount,
-                Price = Convert.ToDecimal(self.Price / self.Count * newCount),
+                Price = self.Price / self.Count * newCount,
                 Header = self.Header,
                 Mod = self.Mod
             };

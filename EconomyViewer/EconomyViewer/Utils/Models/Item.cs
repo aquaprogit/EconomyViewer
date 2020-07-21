@@ -11,11 +11,17 @@ namespace EconomyViewer.Utils
     public class Item : INotifyPropertyChanged
     {
         private string header;
-        private int count;
-        private decimal price;
+        private int count = 1;
+        private int price = 1;
         private string mod;
+        private bool clearToStringValue = false;
 
-        public string StringFormat => ToString();
+        public event PropertyChangedEventHandler PropertyChanged;
+        public void OnPropertyChanged([CallerMemberName]string propertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+        public string StringFormat =>  ToString();
         /// <summary>
         /// ID предмета в базе данных. Доступ только для чтения
         /// </summary>
@@ -30,7 +36,7 @@ namespace EconomyViewer.Utils
             set
             {
                 header = value;
-                OnPropertyChanged("Header");
+                OnPropertyChanged();
             }
         }
         /// <summary>
@@ -42,21 +48,24 @@ namespace EconomyViewer.Utils
 
             set
             {
+                int priceForOne = price / count;
                 count = value;
-                OnPropertyChanged("Count");
+                Price = priceForOne * count;
+                OnPropertyChanged();
+                OnPropertyChanged("Price");
             }
         }
         /// <summary>
         /// Стоимость предмета в количестве <see cref="Count"/>.
         /// </summary>
-        public decimal Price
+        public int Price
         {
             get => price;
 
             set
             {
                 price = value;
-                OnPropertyChanged("Price");
+                OnPropertyChanged();
             }
         }
         /// <summary>
@@ -68,7 +77,7 @@ namespace EconomyViewer.Utils
             set
             {
                 mod = value;
-                OnPropertyChanged("Mod");
+                OnPropertyChanged();
             }
         }
         /// <summary>
@@ -84,7 +93,7 @@ namespace EconomyViewer.Utils
             ID = id;
             this.header = header;
             this.count = count;
-            this.price = Convert.ToDecimal(price);
+            this.price = price;
             this.mod = mod;
         }
         /// <summary>
@@ -94,30 +103,25 @@ namespace EconomyViewer.Utils
         /// <param name="count">Количество предмета.</param>
         /// <param name="price">Стоимость предмета за его количество.</param>
         /// <param name="mod">Модификация предмета.</param>
-        public Item(string header, int count, int price, string mod)
+        public Item(string header, int count, int price, string mod, bool clearToString = false)
         {
             this.header = header ?? throw new ArgumentNullException("Header value equals null");
             this.count = count;
-            this.price = Convert.ToDecimal(price);
+            this.price = price;
             this.mod = mod ?? throw new ArgumentNullException("Mod value equals null");
+            clearToStringValue = clearToString;
         }
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="Item"/> со стандартными параметрами.
         /// </summary>
         public Item() { }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        public void OnPropertyChanged([CallerMemberName] string prop = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
-        }
         /// <summary>
         /// Возвращает строку, представляющую данный <see cref="Item"/>
         /// </summary>
         /// <returns>Строку в формате "Название Количество шт. - Цена"</returns>
         public override string ToString()
         {
-            return $"{header} {count} шт. - {price}";
+            return clearToStringValue ? "" : $"{header} {count} шт. - {price}";
         }
         public override bool Equals(object obj)
         {

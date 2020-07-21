@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:EconomyViewer.Utils"
         xmlns:this="clr-namespace:EconomyViewer"
         xmlns:tool="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance this:MainWindow}"
         Title="Economy Viewer"
@@ -16,8 +17,13 @@
         WindowStartupLocation="CenterScreen"
         FontSize="24">
     <Window.Resources>
+        <ItemsPanelTemplate x:Key="ItemsTemplate">
+            <VirtualizingStackPanel />
+        </ItemsPanelTemplate>
         <local:IntToBoolConverter x:Key="intToBoolConverter" />
         <local:ItemToStringConverter x:Key="itemToStringConverter" />
+        <local:CountToBoolConverter x:Key="countToBoolConverter" />
+        <local:ListToDocumentConverter x:Key="listToDocumentConverter" />
         <BooleanToVisibilityConverter x:Key="boolToVisibilityConverter" />
         <Style TargetType="Image">
             <Setter Property="RenderOptions.BitmapScalingMode"
@@ -170,7 +176,7 @@
                         </Style>
                     </Grid.Resources>
                     <Grid x:Name="Main_Grid"
-                          Visibility="Visible">
+                          Visibility="Hidden">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="2*" />
                             <ColumnDefinition Width="55" />
@@ -192,7 +198,9 @@
                                            Text="Сервер:" />
                                 <ComboBox x:Name="MainSelectServer_ComboBox"
                                           Grid.Row="1"
-                                          SelectedItem="{Binding SelectedServer}"
+                                          DataContext="{Binding ServerViewModel}"
+                                          ItemsSource="{Binding Servers}"
+                                          SelectedItem="{Binding Server, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                           HorizontalAlignment="Left"
                                           Height="Auto"
                                           VerticalAlignment="Center"
@@ -207,21 +215,18 @@
                                 </Grid.RowDefinitions>
                                 <TextBlock Grid.Row="0"
                                            Text="Предмет:" />
-                                <ComboBox x:Name="MainSelectItem_ComboBox"
-                                          Grid.Row="1"
-                                          HorizontalAlignment="Left"
-                                          VerticalAlignment="Center"
-                                          Width="300"
-                                          IsTextSearchEnabled="False"
-                                          IsEditable="True"
-                                          IsTabStop="True"
-                                          IsSynchronizedWithCurrentItem="False"
-                                          SelectionChanged="MainSelectItem_ComboBox_SelectionChanged"
-                                          GotFocus="MainSelectItem_ComboBox_GotFocus"
-                                          TextBoxBase.TextChanged="MainSelectItem_ComboBox_TextChanged"
-                                          DropDownOpened="MainSelectItem_ComboBox_DropDownOpened"
-                                          MaxDropDownHeight="350"
-                                          PreviewKeyDown="MainSelectItem_ComboBox_PreviewKeyDown" />
+                                <local:FilteredComboBox x:Name="MainSelectItem_ComboBox"
+                                                        Grid.Row="1"
+                                                        HorizontalAlignment="Left"
+                                                        VerticalAlignment="Center"
+                                                        Width="300"
+                                                        IsTextSearchEnabled="False"
+                                                        ItemsPanel="{StaticResource ItemsTemplate}"
+                                                        ItemsSource="{Binding Headers, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                                        SelectedItem="{Binding SelectedHeader, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}"
+                                                        IsEditable="True"
+                                                        IsTabStop="True">
+                                </local:FilteredComboBox>
                             </Grid>
                             <Grid Grid.Row="2">
                                 <GroupBox Header="Фильтры"
@@ -243,7 +248,7 @@
                                                                        Source="Assets/unchecked.png"
                                                                        Width="25"
                                                                        Margin="0,0,5,0"
-                                                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                                                                       RenderOptions.BitmapScalingMode="HighQuality" />
                                                                 <ContentPresenter />
                                                             </StackPanel>
                                                             <ControlTemplate.Triggers>
@@ -294,9 +299,9 @@
                                         </ListView>
                                         <CheckBox x:Name="MainCheckAllFilter_CheckBox"
                                                   Grid.Row="1"
+                                                  IsEnabled="{Binding ItemViewModel.Headers.Count, Mode=OneWay, Converter={StaticResource countToBoolConverter}, UpdateSourceTrigger=PropertyChanged}"
                                                   Click="MainCheckAllFilter_CheckBox_Click">
                                             <Label Content="Выбрать всё"
-                                                   
                                                    VerticalContentAlignment="Center" />
                                         </CheckBox>
                                     </Grid>
@@ -304,13 +309,12 @@
                             </Grid>
                         </Grid>
                         <Grid Grid.Column="2"
-                              DataContext="{Binding ItemContainer}">
+                              DataContext="{Binding ItemViewModel}">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="4*" />
                                 <RowDefinition Height="5*" />
                                 <RowDefinition Height="5*" />
                             </Grid.RowDefinitions>
-                            <!--{Binding ElementName=MainSelectItem_ComboBox, Path=SelectedIndex, Converter={StaticResource intToBoolConverter}}-->
                             <Border Grid.Row="0"
                                     IsEnabled="True"
                                     BorderBrush="LightGray"
@@ -329,7 +333,7 @@
                                              Grid.Column="0"
                                              TextWrapping="Wrap"
                                              Focusable="True"
-                                             Text="{Binding SelectedItem, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource itemToStringConverter}}" />
+                                             Text="{Binding SelectedItem, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
                                     <Button x:Name="MainCopyValue_Button"
                                             Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
                                             Grid.Column="1"
@@ -362,7 +366,7 @@
                                                   HorizontalScrollBarVisibility="Auto"
                                                   Grid.Column="1">
                                         <TextBlock x:Name="MainSelectedItemName_TextBlock"
-                                                   Text="{Binding SelectedItem.Header}"/>
+                                                   Text="{Binding SelectedItem.Header, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
                                     </ScrollViewer>
                                 </Grid>
                                 <Grid Grid.Row="1">
@@ -375,11 +379,10 @@
                                                         Grid.Column="1"
                                                         HorizontalAlignment="Left"
                                                         DefaultValue="1"
-                                                        Value="1"
+                                                        Value="{Binding SelectedItem.Count, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                         Minimum="1"
                                                         VerticalAlignment="Center"
-                                                        FontSize="26"
-                                                        ValueChanged="SelectedItemCount_IntUpDown_ValueChanged" />
+                                                        FontSize="26" />
                                 </Grid>
                                 <Grid Grid.Row="2">
                                     <Grid.ColumnDefinitions>
@@ -390,7 +393,7 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Text="Цена:" />
                                     <TextBlock x:Name="ToViewSelectedItemPrice_TextBlock"
-                                               Text="1"
+                                               Text="{Binding SelectedItem.Price, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                                Grid.Column="1" />
                                     <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
                                             Grid.Column="2"
@@ -454,12 +457,19 @@
                                       Grid.Column="1">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto"
+                                                          MinWidth="25" />
                                         <ColumnDefinition Width="*"
                                                           MinWidth="50" />
                                     </Grid.ColumnDefinitions>
                                     <TextBlock x:Name="MainToSumUpResult_TextBlock"
-                                               Text="Итоговая сумма: 0"
+                                               Text="Итоговая сумма:"
                                                FontSize="20" />
+                                    <TextBlock x:Name="MainToSumupResult_Int"
+                                               Grid.Column="1"
+                                               Margin="5,0,0,0"
+                                               FontSize="20"
+                                               Text="{Binding ToSumUpResult, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
                                     <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
                                             Grid.Column="2"
                                             HorizontalAlignment="Right"
@@ -483,16 +493,17 @@
                             </Grid>
                         </Grid>
                     </Grid>
-                    <Grid x:Name="Exchange_Grid">
-                
-                    </Grid>
-                    <Grid x:Name="Edit_Grid">
+                    <Grid x:Name="Exchange_Grid"
+                          Visibility="Hidden">
 
                     </Grid>
-                    
-                    <Grid x:Name="Add_Grid"
+                    <Grid x:Name="Edit_Grid"
                           Visibility="Hidden">
-                        <!--#region temp hide
+
+                    </Grid>
+
+                    <Grid x:Name="Add_Grid"
+                          Visibility="Visible">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="63*" />
                             <ColumnDefinition Width="55" />
@@ -512,11 +523,13 @@
                                 <TextBlock Text="Сервер:" />
                                 <ComboBox x:Name="ToAddSelectServer_ComboBox"
                                           Grid.Row="1"
+                                          DataContext="{Binding ServerViewModel}"
                                           HorizontalAlignment="Left"
                                           VerticalAlignment="Center"
                                           Width="250"
-                                          VerticalContentAlignment="Center"
-                                          SelectionChanged="ToAddSelectServer_ComboBox_SelectionChanged" />
+                                          ItemsSource="{Binding Servers}"
+                                          SelectedItem="{Binding Server, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          VerticalContentAlignment="Center" />
                             </Grid>
                             <Grid Grid.Row="1">
                                 <GroupBox Header="Режим">
@@ -534,23 +547,27 @@
                                         <RadioButton x:Name="Common_RadioButton"
                                                      Tag="Common"
                                                      Content="Обычный"
-                                                     IsChecked="False" />
+                                                     IsChecked="True" />
                                         <RadioButton x:Name="Fast_RadioButton"
                                                      Tag="Fast"
                                                      Content="Быстрый"
-                                                     IsChecked="True" />
+                                                     IsChecked="{Binding IsFastAdding, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}" />
                                     </StackPanel>
                                 </GroupBox>
                             </Grid>
                         </Grid>
 
-                        <Grid Grid.Column="2">
+                        <Grid Grid.Column="2"
+                              DataContext="{Binding ServerViewModel}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="65*" />
+                                <RowDefinition Height="30*" />
+                            </Grid.RowDefinitions>
                             <Grid x:Name="FastAdding_Grid"
                                   Visibility="{Binding ElementName=Fast_RadioButton, Path=IsChecked, Converter={StaticResource boolToVisibilityConverter}, Mode=TwoWay}">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="3*" />
                                     <RowDefinition Height="1*" />
-                                    <RowDefinition Height="2*" />
                                 </Grid.RowDefinitions>
                                 <RichTextBox x:Name="ToAddData_RichTextBox"
                                              Margin="15"
@@ -579,26 +596,17 @@
                                               Width="250"
                                               FontSize="26"
                                               IsEditable="True"
+                                              ItemsSource="{Binding Mods}"
                                               IsTextSearchEnabled="True"
-                                              IsTextSearchCaseSensitive="False"
-                                              GotFocus="ToFastAddItemMod_ComboBox_GotFocus" />
+                                              IsTextSearchCaseSensitive="False" />
 
                                 </Grid>
-                                <Button x:Name="FastAdd_Button"
-                                        Grid.Row="2"
-                                        HorizontalAlignment="Center"
-                                        VerticalAlignment="Center"
-                                        Width="200"
-                                        Height="56"
-                                        Content="Добавить"
-                                        Click="FastAdd_Button_Click" />
                             </Grid>
                             <Grid x:Name="CommonAdding_Grid"
                                   Visibility="{Binding ElementName=Common_RadioButton, Path=IsChecked, Converter={StaticResource boolToVisibilityConverter}, Mode=TwoWay}">
                                 <Grid.RowDefinitions>
-                                    <RowDefinition Height="48*" />
-                                    <RowDefinition Height="120" />
-                                    <RowDefinition Height="24*" />
+                                    <RowDefinition />
+                                    <RowDefinition Height="50" />
                                 </Grid.RowDefinitions>
                                 <Grid Grid.Row="0">
                                     <Grid.Resources>
@@ -663,23 +671,24 @@
                                                   VerticalAlignment="Center"
                                                   Width="250"
                                                   FontSize="24"
+                                                  ItemsSource="{Binding Mods}"
                                                   IsEditable="True"
                                                   IsTextSearchEnabled="True"
                                                   IsTextSearchCaseSensitive="False" />
                                     </Grid>
                                 </Grid>
-                                <Grid Grid.Row="2">
-                                    <Button x:Name="CommonAdd_Button"
-                                            Content="Добавить"
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"
-                                            Width="200"
-                                            Height="55"
-                                            Click="CommonAdd_Button_Click" />
-                                </Grid>
+                            </Grid>
+                            <Grid Grid.Row="1">
+                                <Button x:Name="ToAdd_Button"
+                                        Grid.Row="2"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Width="200"
+                                        Height="56"
+                                        Content="Добавить"
+                                        Click="ToAdd_Button_Click" />
                             </Grid>
                         </Grid>
-                        -->
                     </Grid>
 
                 </Grid>

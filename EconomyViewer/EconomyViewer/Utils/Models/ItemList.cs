@@ -15,6 +15,13 @@ namespace EconomyViewer.Utils
         public delegate void DataChangedHandler();
         public event DataChangedHandler OnDataChanged;
 
+        public void RemoveAt(int index)
+        {
+            if (index < itemList.Count && index >= 0)
+            {
+                itemList.RemoveAt(index);
+            }
+        }
         public void Add(Item item)
         {
             if (itemList.Contains(item))
@@ -60,7 +67,7 @@ namespace EconomyViewer.Utils
             return itemList.Contains(item);
         }
 
-        public void CopyTo(Item[ ] array, int arrayIndex)
+        public void CopyTo(Item[] array, int arrayIndex)
         {
             itemList.CopyTo(array, arrayIndex);
         }
