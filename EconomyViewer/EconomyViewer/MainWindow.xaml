@@ -15,7 +15,8 @@
         ResizeMode="CanMinimize"
         WindowStyle="None"
         WindowStartupLocation="CenterScreen"
-        FontSize="24">
+        FontSize="24"
+        MouseLeftButtonDown="Window_MouseDown">
     <Window.Resources>
         <ItemsPanelTemplate x:Key="ItemsTemplate">
             <VirtualizingStackPanel />
@@ -176,7 +177,7 @@
                         </Style>
                     </Grid.Resources>
                     <Grid x:Name="Main_Grid"
-                          Visibility="Hidden">
+                          Visibility="Visible">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="2*" />
                             <ColumnDefinition Width="55" />
@@ -196,8 +197,7 @@
                                 </Grid.RowDefinitions>
                                 <TextBlock Grid.Row="0"
                                            Text="Сервер:" />
-                                <ComboBox x:Name="MainSelectServer_ComboBox"
-                                          Grid.Row="1"
+                                <ComboBox Grid.Row="1"
                                           DataContext="{Binding ServerViewModel}"
                                           ItemsSource="{Binding Servers}"
                                           SelectedItem="{Binding Server, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -311,9 +311,9 @@
                         <Grid Grid.Column="2"
                               DataContext="{Binding ItemViewModel}">
                             <Grid.RowDefinitions>
+                                <RowDefinition Height="2*" />
+                                <RowDefinition Height="5*" />
                                 <RowDefinition Height="4*" />
-                                <RowDefinition Height="5*" />
-                                <RowDefinition Height="5*" />
                             </Grid.RowDefinitions>
                             <Border Grid.Row="0"
                                     IsEnabled="True"
@@ -324,16 +324,19 @@
                                         <ColumnDefinition Width="7*" />
                                         <ColumnDefinition Width="1*" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBox x:Name="MainToCopyValue_TextBox"
-                                             IsReadOnly="True"
-                                             HorizontalAlignment="Left"
-                                             VerticalAlignment="Center"
-                                             FontSize="26"
-                                             BorderBrush="Transparent"
-                                             Grid.Column="0"
-                                             TextWrapping="Wrap"
-                                             Focusable="True"
-                                             Text="{Binding SelectedItem, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                                  VerticalScrollBarVisibility="Hidden">
+                                        <TextBox x:Name="MainToCopyValue_TextBox"
+                                                 IsReadOnly="True"
+                                                 HorizontalAlignment="Left"
+                                                 VerticalAlignment="Center"
+                                                 FontSize="26"
+                                                 BorderBrush="Transparent"
+                                                 Grid.Column="0"
+                                                 TextWrapping="Wrap"
+                                                 Focusable="True"
+                                                 Text="{Binding SelectedItem, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    </ScrollViewer>
                                     <Button x:Name="MainCopyValue_Button"
                                             Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
                                             Grid.Column="1"
@@ -355,6 +358,7 @@
                                     <RowDefinition />
                                     <RowDefinition />
                                     <RowDefinition />
+                                    <RowDefinition />
                                 </Grid.RowDefinitions>
                                 <Grid Grid.Row="0">
                                     <Grid.ColumnDefinitions>
@@ -365,8 +369,7 @@
                                     <ScrollViewer VerticalScrollBarVisibility="Disabled"
                                                   HorizontalScrollBarVisibility="Auto"
                                                   Grid.Column="1">
-                                        <TextBlock x:Name="MainSelectedItemName_TextBlock"
-                                                   Text="{Binding SelectedItem.Header, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        <TextBlock Text="{Binding SelectedItem.Header, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
                                     </ScrollViewer>
                                 </Grid>
                                 <Grid Grid.Row="1">
@@ -375,7 +378,7 @@
                                         <ColumnDefinition Width="340*" />
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Text="Количество:" />
-                                    <tool:IntegerUpDown x:Name="MainSelectedItemCount_IntUpDown"
+                                    <tool:UIntegerUpDown x:Name="MainSelectedItemCount_IntUpDown"
                                                         Grid.Column="1"
                                                         HorizontalAlignment="Left"
                                                         DefaultValue="1"
@@ -386,21 +389,35 @@
                                 </Grid>
                                 <Grid Grid.Row="2">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="29*" />
-                                        <ColumnDefinition Width="100*" />
-                                        <ColumnDefinition Width="60" />
-                                        <ColumnDefinition Width="60" />
+                                        <ColumnDefinition Width="23*" />
+                                        <ColumnDefinition Width="135*" />
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Text="Цена:" />
-                                    <TextBlock x:Name="ToViewSelectedItemPrice_TextBlock"
-                                               Text="{Binding SelectedItem.Price, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                    <TextBlock Text="{Binding SelectedItem.Price, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                                Grid.Column="1" />
+                                </Grid>
+                                <Grid Grid.Row="3">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="59*" />
+                                        <ColumnDefinition Width="295*" />
+                                        <ColumnDefinition Width="60*" />
+                                        <ColumnDefinition Width="60*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Мод:"
+                                               Height="32"
+                                               Margin="0,11"
+                                               Width="54" />
+                                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                                  Grid.Column="1"
+                                                  VerticalScrollBarVisibility="Hidden">
+                                        <TextBlock Text="{Binding SelectedItem.Mod, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    </ScrollViewer>
                                     <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
                                             Grid.Column="2"
                                             x:Name="MainAddToSumUp_Button"
                                             Click="AddToSumUp_Button_Click"
-                                            Margin="5,2"
-                                            Width="50">
+                                            Width="50"
+                                            Height="50">
                                         <Button.ToolTip>
                                             <ToolTip Style="{StaticResource ToolTipStyle}"
                                                      HorizontalOffset="-75"
@@ -414,8 +431,8 @@
                                             Grid.Column="3"
                                             x:Name="MainRemoveFromSumUp_Button"
                                             Click="RemoveFromSumUp_Button_Click"
-                                            Margin="5,2"
-                                            Width="50">
+                                            Width="50"
+                                            Height="50">
                                         <Button.ToolTip>
                                             <ToolTip Style="{StaticResource ToolTipStyle}"
                                                      HorizontalOffset="-75"
@@ -499,11 +516,250 @@
                     </Grid>
                     <Grid x:Name="Edit_Grid"
                           Visibility="Hidden">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="63*" />
+                            <ColumnDefinition Width="55" />
+                            <ColumnDefinition Width="95*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="1*" />
+                                <RowDefinition Height="1*" />
+                                <RowDefinition Height="2*" />
+                            </Grid.RowDefinitions>
+                            <Grid Grid.Row="0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <TextBlock Text="Сервер:" />
+                                <ComboBox Grid.Row="1"
+                                          DataContext="{Binding ServerViewModel}"
+                                          HorizontalAlignment="Left"
+                                          VerticalAlignment="Center"
+                                          Width="250"
+                                          VerticalContentAlignment="Center"
+                                          ItemsSource="{Binding Servers}"
+                                          SelectedItem="{Binding Server, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            </Grid>
+                            <Grid Grid.Row="1">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <TextBlock Text="Предмет:" />
+                                <local:FilteredComboBox x:Name="EditSelectItem_ComboBox"
+                                                        Grid.Row="1"
+                                                        DataContext="{Binding ItemViewModel}"
+                                                        HorizontalAlignment="Left"
+                                                        VerticalAlignment="Center"
+                                                        Width="300"
+                                                        IsTextSearchEnabled="False"
+                                                        ItemsPanel="{StaticResource ItemsTemplate}"
+                                                        ItemsSource="{Binding Headers, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                                        SelectedItem="{Binding SelectedHeader, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}"
+                                                        IsEditable="True"
+                                                        IsTabStop="True" />
+                            </Grid>
+                            <Grid Grid.Row="2">
+                                <GroupBox Header="Выберите действие"
+                                          FontSize="22"
+                                          IsEnabled="True"
+                                          VerticalAlignment="Top">
+                                    <StackPanel x:Name="SelectAction_StackPanel">
+                                        <StackPanel.Resources>
+                                            <Style TargetType="RadioButton">
+                                                <Setter Property="Margin"
+                                                        Value="0,5" />
+                                                <Setter Property="VerticalContentAlignment"
+                                                        Value="Center" />
+                                                <Setter Property="HorizontalAlignment"
+                                                        Value="Left" />
+                                            </Style>
+                                        </StackPanel.Resources>
+                                        <RadioButton Content="Редактировать"
+                                                     Tag="Edit"
+                                                     IsChecked="True"
+                                                     x:Name="Edit_RadioButton" />
+                                        <RadioButton Content="Удалить"
+                                                     Tag="Delete"
+                                                     IsChecked="{Binding IsEditMod, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}"
+                                                     x:Name="Delete_RadioButton" />
+                                    </StackPanel>
+                                </GroupBox>
+                            </Grid>
+                        </Grid>
+                        <Grid Grid.Column="2"
+                              IsEnabled="{Binding ElementName=SelectItemToEdit_ComboBox, Path=SelectedIndex, Converter={StaticResource intToBoolConverter}}">
+                            <Grid x:Name="SelectEdit_Grid"
+                                  Visibility="{Binding ElementName=Edit_RadioButton, Path=IsChecked, Converter={StaticResource boolToVisibilityConverter}, Mode=TwoWay}">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="2*" />
+                                    <RowDefinition Height="1*" />
+                                    <RowDefinition Height="1*" />
+                                </Grid.RowDefinitions>
+                                <Grid Grid.Row="0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                    </Grid.RowDefinitions>
+                                    <Grid Grid.Row="0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="4*" />
+                                            <ColumnDefinition Width="10*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Название:" />
+                                        <TextBox x:Name="ItemToEditName_TextBox"
+                                                 Grid.Column="1"
+                                                 DataContext="{Binding ItemViewModel}"
+                                                 Width="Auto"
+                                                 MinWidth="250"
+                                                 MaxWidth="320"
+                                                 HorizontalScrollBarVisibility="Auto"
+                                                 VerticalAlignment="Center"
+                                                 Text="{Binding SelectedItem.Header, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                                 HorizontalAlignment="Left" />
 
+                                    </Grid>
+                                    <Grid Grid.Row="1">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="16*" />
+                                            <ColumnDefinition Width="34*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Количество:" />
+                                        <tool:UIntegerUpDown x:Name="ItemToEditCount_IntUpDown"
+                                                            Grid.Column="1"
+                                                            HorizontalAlignment="Left"
+                                                            DefaultValue="1"
+                                                            DataContext="{Binding ItemViewModel}"
+                                                            Value="{Binding SelectedItem.Count, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                                            Minimum="1"
+                                                            Height="45"
+                                                            VerticalAlignment="Center"
+                                                            IsEnabled="True" />
+                                    </Grid>
+                                    <Grid Grid.Row="2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="8*" />
+                                            <ColumnDefinition Width="45*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Цена:" />
+                                        <tool:UIntegerUpDown x:Name="ItemToEditPrice_IntUpDown"
+                                                            Grid.Column="1"
+                                                            Width="Auto"
+                                                            DataContext="{Binding ItemViewModel}"
+                                                            HorizontalAlignment="Left"
+                                                            Minimum="1"
+                                                            Height="45"
+                                                            VerticalAlignment="Center"
+                                                            VerticalContentAlignment="Center"
+                                                            Value="{Binding SelectedItem.Price, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    </Grid>
+                                    <Grid Grid.Row="3">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="1*" />
+                                            <ColumnDefinition Width="5*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Мод:" />
+                                        <ComboBox x:Name="ItemToEditMod_ComboBox"
+                                                  Grid.Column="1"
+                                                  IsEditable="True"
+                                                  IsTextSearchEnabled="False"
+                                                  HorizontalAlignment="Left"
+                                                  VerticalAlignment="Center"
+                                                  Width="250"
+                                                  ItemsSource="{Binding ServerViewModel.Mods, Mode=OneWay, UpdateSourceTrigger=LostFocus}"
+                                                  Text="{Binding ItemViewModel.SelectedItem.Mod, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    </Grid>
+                                </Grid>
+                                <Grid Grid.Row="2">
+                                    <Button x:Name="Edit_Button"
+                                            HorizontalAlignment="Center"
+                                            Content="Редактировать"
+                                            VerticalAlignment="Center"
+                                            Width="Auto"
+                                            Padding="15,10"
+                                            MinWidth="200"
+                                            Click="Edit_Button_Click" />
+                                </Grid>
+                            </Grid>
+                            <Grid x:Name="SelectDelete_Grid"
+                                  Visibility="{Binding ElementName=Delete_RadioButton, Path=IsChecked, Converter={StaticResource boolToVisibilityConverter}, Mode=TwoWay}">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="2*" />
+                                    <RowDefinition Height="1*" />
+                                    <RowDefinition Height="1*" />
+                                </Grid.RowDefinitions>
+                                <Grid Grid.Row="0"
+                                      DataContext="{Binding ItemViewModel.SelectedItem}">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                    </Grid.RowDefinitions>
+                                    <Grid Grid.Row="0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="4*" />
+                                            <ColumnDefinition Width="10*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Название:" />
+                                        <ScrollViewer VerticalScrollBarVisibility="Disabled"
+                                                      HorizontalScrollBarVisibility="Auto"
+                                                      Grid.Column="1">
+                                            <TextBlock x:Name="ToDeleteItemName_TextBlock"
+                                                       Text="{Binding Header, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" />
+                                        </ScrollViewer>
+                                    </Grid>
+                                    <Grid Grid.Row="1">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="16*" />
+                                            <ColumnDefinition Width="34*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Количество:" />
+                                        <TextBlock x:Name="ToDeleteItemCount_TextBlock"
+                                                   Grid.Column="1"
+                                                   Text="{Binding Count, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" />
+                                    </Grid>
+                                    <Grid Grid.Row="2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="87*" />
+                                            <ColumnDefinition Width="410*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Цена:" />
+                                        <TextBlock x:Name="ToDeleteItemPrice_TextBlock"
+                                                   Grid.Column="1"
+                                                   Text="{Binding Price, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" />
+                                    </Grid>
+                                    <Grid Grid.Row="3">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="1*" />
+                                            <ColumnDefinition Width="5*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Мод:" />
+                                        <TextBlock x:Name="ToDeleteItemMod_TextBlock"
+                                                   Grid.Column="1"
+                                                   Text="{Binding Mod, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" />
+                                    </Grid>
+                                </Grid>
+                                <Grid Grid.Row="2">
+                                    <Button x:Name="Delete_Button"
+                                            Grid.Column="0"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Width="200"
+                                            Content="Удалить"
+                                            Padding="20,10"
+                                            Click="Delete_Button_Click" />
+                                </Grid>
+                            </Grid>
+                        </Grid>
                     </Grid>
 
                     <Grid x:Name="Add_Grid"
-                          Visibility="Visible">
+                          Visibility="Hidden">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="63*" />
                             <ColumnDefinition Width="55" />
@@ -521,8 +777,7 @@
                                     <RowDefinition />
                                 </Grid.RowDefinitions>
                                 <TextBlock Text="Сервер:" />
-                                <ComboBox x:Name="ToAddSelectServer_ComboBox"
-                                          Grid.Row="1"
+                                <ComboBox Grid.Row="1"
                                           DataContext="{Binding ServerViewModel}"
                                           HorizontalAlignment="Left"
                                           VerticalAlignment="Center"
@@ -610,7 +865,7 @@
                                 </Grid.RowDefinitions>
                                 <Grid Grid.Row="0">
                                     <Grid.Resources>
-                                        <Style TargetType="tool:IntegerUpDown">
+                                        <Style TargetType="tool:UIntegerUpDown">
                                             <Setter Property="Height"
                                                     Value="45" />
                                             <Setter Property="HorizontalAlignment"
@@ -649,7 +904,7 @@
                                             <ColumnDefinition Width="34*" />
                                         </Grid.ColumnDefinitions>
                                         <TextBlock Text="Количество:" />
-                                        <tool:IntegerUpDown x:Name="ToAddItemCount_IntUpDown" />
+                                        <tool:UIntegerUpDown x:Name="ToAddItemCount_IntUpDown" />
                                     </Grid>
                                     <Grid Grid.Row="2">
                                         <Grid.ColumnDefinitions>
@@ -657,7 +912,7 @@
                                             <ColumnDefinition Width="45*" />
                                         </Grid.ColumnDefinitions>
                                         <TextBlock Text="Цена:" />
-                                        <tool:IntegerUpDown x:Name="ToAddItemPrice_IntUpDown" />
+                                        <tool:UIntegerUpDown x:Name="ToAddItemPrice_IntUpDown" />
                                     </Grid>
                                     <Grid Grid.Row="3">
                                         <Grid.ColumnDefinitions>
@@ -690,7 +945,6 @@
                             </Grid>
                         </Grid>
                     </Grid>
-
                 </Grid>
             </Grid>
         </Grid>
@@ -791,7 +1045,7 @@
                         </ListViewItem.ToolTip>
                     </ListViewItem>
                     <!--// Exchange //-->
-                    <ListViewItem Tag="Exchange">
+                    <!--<ListViewItem Tag="Exchange">
                         <StackPanel Orientation="Horizontal"
                                     Width="230">
                             <Image Source="Assets/exchange.png"
@@ -807,7 +1061,7 @@
                                      Content="Обмен"
                                      Style="{StaticResource ToolTipStyle}" />
                         </ListViewItem.ToolTip>
-                    </ListViewItem>
+                    </ListViewItem>-->
                     <!--// Edit //-->
                     <ListViewItem Tag="Edit">
                         <StackPanel Orientation="Horizontal"

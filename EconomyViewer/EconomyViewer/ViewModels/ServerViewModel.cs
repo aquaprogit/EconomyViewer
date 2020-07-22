@@ -20,11 +20,20 @@ namespace EconomyViewer.ViewModels
         }
         public List<string> Servers
         {
-            get => DataBaseWorker.GetAllTables();
+            get => DataBaseWorker.GetAllTables().OrderBy(c => c).ToList();
         }
         public List<string> Mods
         {
             get => DataBaseWorker.GetOnlyColumnList(App.Server, "i_mod");
+        }
+        public ServerViewModel()
+        {
+            DataBaseWorker.DataChanged += DataBaseWorker_DataChanged;
+        }
+
+        private void DataBaseWorker_DataChanged()
+        {
+            OnPropertyChanged("Mods");
         }
     }
 }

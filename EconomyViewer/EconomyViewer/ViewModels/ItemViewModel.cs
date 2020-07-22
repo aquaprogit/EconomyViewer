@@ -16,11 +16,11 @@ namespace EconomyViewer.ViewModels
         private ItemList<Item> toSumUpItems = new ItemList<Item>();
         private readonly Item clearItem = new Item("", 0, 0, "", true);
         private List<Item> items = new List<Item>();
-        public int ToSumUpResult
+        public uint ToSumUpResult
         {
             get
             {
-                int res = 0;
+                uint res = 0;
                 foreach (var item in toSumUpItems)
                 {
                     res += item.Price;
@@ -60,9 +60,11 @@ namespace EconomyViewer.ViewModels
         {
             get
             {
-                if (items != DataBaseWorker.GetData(App.Server).OrderBy(c => c.Header).ToList())
+                var data = DataBaseWorker.GetData(App.Server);
+                
+                if (!Enumerable.SequenceEqual(items, data))
                 {
-                    items = DataBaseWorker.GetData(App.Server).OrderBy(c => c.Header).ToList();
+                    items = data;
                     OnPropertyChanged("ItemList");
                     OnPropertyChanged("Headers");
                 }
@@ -76,8 +78,8 @@ namespace EconomyViewer.ViewModels
             get
             {
                 var headers = filterMod.Count != 0
-                    ? items.Where(i => i.Mod.IsOneOf(filterMod.ToArray())).Select(i => i.Header).ToList()
-                    : items.Select(i => i.Header).ToList();
+                    ? ItemList.Where(i => i.Mod.IsOneOf(filterMod.ToArray())).Select(i => i.Header).ToList()
+                    : ItemList.Select(i => i.Header).ToList();
                 return headers;
             }
         }
@@ -100,6 +102,12 @@ namespace EconomyViewer.ViewModels
         {
             filterMod = new List<string>();
             toSumUpItems.OnDataChanged += ToSumUpItems_OnDataChanged;
+            DataBaseWorker.DataChanged += DataBaseWorker_DataChanged;
+        }
+
+        private void DataBaseWorker_DataChanged()
+        {
+            OnPropertyChanged("Headers");
         }
 
         private void ToSumUpItems_OnDataChanged()

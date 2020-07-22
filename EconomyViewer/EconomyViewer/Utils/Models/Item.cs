@@ -10,18 +10,19 @@ namespace EconomyViewer.Utils
     /// </summary>
     public class Item : INotifyPropertyChanged
     {
+        private const uint ZERO = 0;
         private string header;
-        private int count = 1;
-        private int price = 1;
-        private string mod;
+        private uint count = 1;
+        private uint price = 1;
+        private string mod = "";
         private bool clearToStringValue = false;
-
+        private readonly uint originalPricePerOne;
         public event PropertyChangedEventHandler PropertyChanged;
-        public void OnPropertyChanged([CallerMemberName]string propertyName = "")
+        public void OnPropertyChanged([CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-        public string StringFormat =>  ToString();
+        public string StringFormat => ToString();
         /// <summary>
         /// ID предмета в базе данных. Доступ только для чтения
         /// </summary>
@@ -42,15 +43,14 @@ namespace EconomyViewer.Utils
         /// <summary>
         /// Количество предмета за стоимость <see cref="Price"/>.
         /// </summary>
-        public int Count
+        public uint Count
         {
             get => count;
 
             set
             {
-                int priceForOne = price / count;
                 count = value;
-                Price = priceForOne * count;
+                Price = originalPricePerOne * count;
                 OnPropertyChanged();
                 OnPropertyChanged("Price");
             }
@@ -58,7 +58,7 @@ namespace EconomyViewer.Utils
         /// <summary>
         /// Стоимость предмета в количестве <see cref="Count"/>.
         /// </summary>
-        public int Price
+        public uint Price
         {
             get => price;
 
@@ -88,13 +88,15 @@ namespace EconomyViewer.Utils
         /// <param name="count">Количество предмета.</param>
         /// <param name="price">Стоимость предмета за его количество.</param>
         /// <param name="mod">Модификация предмета.</param>
-        public Item(int id, string header, int count, int price, string mod)
+        public Item(int id, string header, uint count, uint price, string mod)
         {
             ID = id;
             this.header = header;
             this.count = count;
             this.price = price;
             this.mod = mod;
+            if (ZERO.IsOneOf(price, count) == false)
+                originalPricePerOne = price / count;
         }
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="Item"/> c задачей открытых параметров.
@@ -103,13 +105,15 @@ namespace EconomyViewer.Utils
         /// <param name="count">Количество предмета.</param>
         /// <param name="price">Стоимость предмета за его количество.</param>
         /// <param name="mod">Модификация предмета.</param>
-        public Item(string header, int count, int price, string mod, bool clearToString = false)
+        public Item(string header, uint count, uint price, string mod, bool clearToString = false)
         {
             this.header = header ?? throw new ArgumentNullException("Header value equals null");
             this.count = count;
             this.price = price;
             this.mod = mod ?? throw new ArgumentNullException("Mod value equals null");
             clearToStringValue = clearToString;
+            if (ZERO.IsOneOf(price, count) == false)
+                originalPricePerOne = price / count;
         }
         /// <summary>
         /// Инициализирует новый экземпляр <see cref="Item"/> со стандартными параметрами.
@@ -134,8 +138,8 @@ namespace EconomyViewer.Utils
             {
                 var comp = Regex.Match(value, @"(.+) ([0-9]+) шт. - ([0-9]+)$").Groups;
                 string itemName = comp[1].Value;
-                int itemCount = Convert.ToInt32(comp[2].Value);
-                int itemPrice = Convert.ToInt32(comp[3].Value);
+                uint itemCount = Convert.ToUInt32(comp[2].Value);
+                uint itemPrice = Convert.ToUInt32(comp[3].Value);
 
                 return new Item(itemName, itemCount, itemPrice, mod);
             }

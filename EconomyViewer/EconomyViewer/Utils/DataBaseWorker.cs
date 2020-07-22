@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SQLite;
 using System.Diagnostics;
@@ -12,16 +13,34 @@ namespace EconomyViewer.Utils
             + "\\economy.db; Version=3;";
         private static SQLiteConnection connection;
 
+        public delegate void DataChangedHandler();
+        public static event DataChangedHandler DataChanged;
         public static void DeleteData(string serverName, Item toDelete)
         {
             ExecuteCommand($"DELETE FROM {serverName} " +
                 $"WHERE i_id={toDelete.ID}");
+            DataChanged?.Invoke();
         }
 
+        public static void CreateDataBase()
+        {
+            SQLiteConnection.CreateFile(System.IO.Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName) + "\\economy.db");
+            List<string> servers = new List<string>() { "Classic", "Fantasy", "Galaxy", "HiTech", "Industrial", "MagicRPG", "Pixelmon", "SkyFactory", "TechnoMagic" };
+            SQLiteConnection m_dbConnection = new SQLiteConnection(connectionString);
+            m_dbConnection.Open();
+
+            foreach (var item in servers)
+            {
+                string sql = $"CREATE TABLE {item} (\"i_id\" INTEGER NOT NULL DEFAULT 0 UNIQUE,\"i_header\"  TEXT NOT NULL,\"i_count\"   INTEGER NOT NULL DEFAULT 1,\"i_price\"   INTEGER NOT NULL DEFAULT 1,\"i_mod\" TEXT NOT NULL,PRIMARY KEY(\"i_id\"))";
+
+                SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
+                command.ExecuteNonQuery();
+            }
+            m_dbConnection.Close();
+        }
         public static void DeleteAllData(string serverName)
         {
             ExecuteCommand($"DELETE FROM {serverName}");
-
         }
         public static List<string> GetAllTables()
         {
@@ -50,9 +69,8 @@ namespace EconomyViewer.Utils
                 SQLiteDataReader reader = command.ExecuteReader();
                 while (reader.Read())
                 {
-                    result.Add(new Item(reader.GetInt32(0), reader.GetString(1), reader.GetInt32(2), reader.GetInt32(3), reader.GetString(4)));
+                    result.Add(new Item(reader.GetInt32(0), reader.GetString(1), Convert.ToUInt32(reader.GetInt32(2)), Convert.ToUInt32(reader.GetInt32(3)), reader.GetString(4)));
                 }
-
                 return result;
             }
         }
@@ -77,12 +95,14 @@ namespace EconomyViewer.Utils
         {
             ExecuteCommand($"INSERT INTO {serverName} (i_header, i_count, i_price, i_mod)" +
                 $"VALUES ('{newItem.Header}', {newItem.Count}, {newItem.Price}, '{newItem.Mod}')");
+            DataChanged?.Invoke();
         }
         public static void UpdateData(string serverName, Item updatedItem, int id)
         {
             ExecuteCommand($"UPDATE {serverName} " +
                 $"SET i_header='{updatedItem.Header}', i_count={updatedItem.Count}, i_price={updatedItem.Price}, i_mod='{updatedItem.Mod}' " +
                 $"WHERE i_id={id}");
+            DataChanged?.Invoke();
         }
         public static void ExecuteCommand(string query)
         {

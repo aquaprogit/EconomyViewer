@@ -19,7 +19,7 @@ namespace EconomyViewer.Utils
             foreach (var e in coll) c.Add(e);
             return c;
         }
-        public static Item IncreaseItem(this Item self, int newCount)
+        public static Item IncreaseItem(this Item self, uint newCount)
         {
             return new Item()
             {
