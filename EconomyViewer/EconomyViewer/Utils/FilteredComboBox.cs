@@ -118,7 +118,9 @@ namespace EconomyViewer.Utils
                 {
                     if (Text.Length != 0)
                     {
+                        oldFilter = Text;
                         RefreshFilter();
+                        Text = oldFilter;
                         IsDropDownOpen = true;
                         EditableTextBox.SelectionStart = int.MaxValue;
                     }

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Security.Principal;
 using System.Threading;
 using System.Windows;
 
@@ -33,6 +34,13 @@ namespace EconomyViewer
         }
         public App()
         {
+#if RESEASE
+            if (!IsUserAdministrator())
+            {
+                MyMessageBox.Show("Run as administrator.", "Нет прав", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+#endif
             if (!File.Exists(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName) + "\\economy.db"))
             {
                 DataBaseWorker.CreateDataBase();
@@ -44,7 +52,33 @@ namespace EconomyViewer
         {
             Debug.WriteLine("Selected server - " + Server);
         }
-
+        public bool IsUserAdministrator()
+        {
+            //bool value to hold our return value
+            bool isAdmin;
+            WindowsIdentity user = null;
+            try
+            {
+                //get the currently logged in user
+                user = WindowsIdentity.GetCurrent();
+                WindowsPrincipal principal = new WindowsPrincipal(user);
+                isAdmin = principal.IsInRole(WindowsBuiltInRole.Administrator);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                isAdmin = false;
+            }
+            catch (Exception)
+            {
+                isAdmin = false;
+            }
+            finally
+            {
+                if (user != null)
+                    user.Dispose();
+            }
+            return isAdmin;
+        }
         private void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
             var st = new StackTrace(e.Exception, true);
@@ -61,11 +95,6 @@ namespace EconomyViewer
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            SplashScreen sp = new SplashScreen("Utils/splashscreen.png");
-            sp.Show(false);
-
-            sp.Close(new TimeSpan(0, 0, 0, 1));
-            Thread.Sleep(1000);
             MainWindow window = new MainWindow();
             window.Show();
         }

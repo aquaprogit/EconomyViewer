@@ -177,7 +177,7 @@
                         </Style>
                     </Grid.Resources>
                     <Grid x:Name="Main_Grid"
-                          Visibility="Visible">
+                          Visibility="Hidden">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="2*" />
                             <ColumnDefinition Width="55" />
@@ -393,7 +393,7 @@
                                         <ColumnDefinition Width="135*" />
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Text="Цена:" />
-                                    <TextBlock Text="{Binding SelectedItem.Price, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                    <TextBlock Text="{Binding SelectedItem.Price, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:N0}, ConverterCulture=de-DE}"
                                                Grid.Column="1" />
                                 </Grid>
                                 <Grid Grid.Row="3">
@@ -511,8 +511,7 @@
                         </Grid>
                     </Grid>
                     <Grid x:Name="Exchange_Grid"
-                          Visibility="Hidden">
-
+                          Visibility="Visible">
                     </Grid>
                     <Grid x:Name="Edit_Grid"
                           Visibility="Hidden">

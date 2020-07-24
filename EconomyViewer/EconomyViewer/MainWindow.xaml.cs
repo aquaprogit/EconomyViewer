@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Principal;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
@@ -120,6 +121,7 @@ namespace EconomyViewer
                     Debug.WriteLine(clearItem);
                 }
             }
+            ToFastAddItemMod_ComboBox.Text = "";
             ToAddData_RichTextBox.IsEnabled = true;
             Mouse.OverrideCursor = Cursors.Arrow;
             if (errorList.Count == 0)
@@ -358,7 +360,12 @@ namespace EconomyViewer
         }
         private void Delete_Button_Click(object sender, RoutedEventArgs e)
         {
-
+            MessageBoxResult res = MyMessageBox.Show("Вы пытаетесь удалить объект из таблицы.\nЭто действие нельзя отменить.\nПродолжить?", "Подтверждение", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (res == MessageBoxResult.Yes)
+            {
+                DataBaseWorker.DeleteData(App.Server, ItemViewModel.SelectedItem);
+                MyMessageBox.Show("Удаление данных прошло успешно!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
         #endregion
 
