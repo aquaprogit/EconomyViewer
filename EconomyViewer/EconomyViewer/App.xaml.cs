@@ -4,9 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Net;
 using System.Security.Principal;
-using System.Threading;
 using System.Windows;
 
 namespace EconomyViewer
@@ -34,6 +32,7 @@ namespace EconomyViewer
         }
         public App()
         {
+            new ForumEconomyParser().GetPostData("Galaxy");
 #if RESEASE
             if (!IsUserAdministrator())
             {
@@ -42,15 +41,13 @@ namespace EconomyViewer
             }
 #endif
             if (!File.Exists(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName) + "\\economy.db"))
-            {
                 DataBaseWorker.CreateDataBase();
-            }
             ServerChanged += App_ServerChanged;
             Server = EconomyViewer.Properties.Settings.Default.DefaultServer;
         }
         private void App_ServerChanged(object sender, EventArgs e)
         {
-            Debug.WriteLine("Selected server - " + Server);
+            Debug.WriteLine("Selected server: " + Server);
         }
         public bool IsUserAdministrator()
         {

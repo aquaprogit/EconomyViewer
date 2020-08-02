@@ -134,9 +134,9 @@ namespace EconomyViewer.Utils
         }
         public static Item FromString(string value, string mod)
         {
-            if (Regex.IsMatch(value, "(.+) ([0-9]+) шт. - ([0-9]+)$"))
+            if (Regex.IsMatch(value, @"(.+)\s([0-9]+) шт. - ([0-9]+)$"))
             {
-                var comp = Regex.Match(value, @"(.+) ([0-9]+) шт. - ([0-9]+)$").Groups;
+                var comp = Regex.Match(value, @"(.+)\s([0-9]+) шт. - ([0-9]+)$").Groups;
                 string itemName = comp[1].Value;
                 uint itemCount = Convert.ToUInt32(comp[2].Value);
                 uint itemPrice = Convert.ToUInt32(comp[3].Value);
