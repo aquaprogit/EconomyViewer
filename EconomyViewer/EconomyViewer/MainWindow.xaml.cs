@@ -287,25 +287,26 @@ namespace EconomyViewer
 
         private void RemoveFromSumUp_Button_Click(object sender, RoutedEventArgs e)
         {
-            ItemViewModel.ToSumUpItems.RemoveAt(ItemViewModel.ToSumUpItems.Count - 1);
+            ItemViewModel.ItemsToSumUp.RemoveAt(ItemViewModel.ItemsToSumUp.Count - 1);
             MainToSumUpContainer_RichTextBox.Document.Blocks.Clear();
-            foreach (var item in ItemViewModel.ToSumUpItems)
+            foreach (var item in ItemViewModel.ItemsToSumUp)
                 MainToSumUpContainer_RichTextBox.Document.Blocks.Add(new Paragraph(new Run(item.ToString())));
             MainToSumUpContainer_RichTextBox.ScrollToEnd();
         }
 
         private void AddToSumUp_Button_Click(object sender, RoutedEventArgs e)
         {
-            ItemViewModel.ToSumUpItems.Add(ItemViewModel.SelectedItem);
+            Item newItem = ItemViewModel.SelectedItem;
+            ItemViewModel.ItemsToSumUp.Add(new Item(newItem.Header, newItem.Count, newItem.Price, newItem.Mod));
             MainToSumUpContainer_RichTextBox.Document.Blocks.Clear();
-            foreach (var item in ItemViewModel.ToSumUpItems)
+            foreach (var item in ItemViewModel.ItemsToSumUp)
                 MainToSumUpContainer_RichTextBox.Document.Blocks.Add(new Paragraph(new Run(item.ToString())));
             MainToSumUpContainer_RichTextBox.ScrollToEnd();
         }
 
         private void ClearFromSumUp_Button_Click(object sender, RoutedEventArgs e)
         {
-            ItemViewModel.ToSumUpItems.Clear();
+            ItemViewModel.ItemsToSumUp.Clear();
             MainToSumUpContainer_RichTextBox.Document.Blocks.Clear();
         }
         #endregion
@@ -368,6 +369,5 @@ namespace EconomyViewer
             }
         }
         #endregion
-
     }
 }

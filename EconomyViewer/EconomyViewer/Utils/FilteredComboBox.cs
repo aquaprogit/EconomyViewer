@@ -123,6 +123,8 @@ namespace EconomyViewer.Utils
                         Text = oldFilter;
                         IsDropDownOpen = true;
                         EditableTextBox.SelectionStart = int.MaxValue;
+
+
                     }
                     else
                     {
