@@ -52,7 +52,6 @@ namespace EconomyViewer.Utils
                 count = value;
                 Price = originalPricePerOne * count;
                 OnPropertyChanged();
-                OnPropertyChanged("Price");
             }
         }
         /// <summary>

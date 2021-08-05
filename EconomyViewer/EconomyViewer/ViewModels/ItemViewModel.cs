@@ -13,7 +13,7 @@ namespace EconomyViewer.ViewModels
     {
         private Item selectedItem;
         private List<string> filterMod = new List<string>();
-        private ItemList<Item> toSumUpItems = new ItemList<Item>();
+        private ItemList<Item> itemsToSumUp = new ItemList<Item>();
         private readonly Item clearItem = new Item("", 0, 0, "", true);
         private List<Item> items = new List<Item>();
         public uint ToSumUpResult
@@ -21,19 +21,19 @@ namespace EconomyViewer.ViewModels
             get
             {
                 uint res = 0;
-                foreach (var item in toSumUpItems)
+                foreach (var item in itemsToSumUp)
                 {
                     res += item.Price;
                 }
                 return res;
             }
         }
-        public ItemList<Item> ToSumUpItems
+        public ItemList<Item> ItemsToSumUp
         {
-            get => toSumUpItems;
+            get => itemsToSumUp;
             set
             {
-                toSumUpItems = value;
+                itemsToSumUp = value;
                 OnPropertyChanged();
             }
         }
@@ -101,7 +101,7 @@ namespace EconomyViewer.ViewModels
         public ItemViewModel()
         {
             filterMod = new List<string>();
-            toSumUpItems.OnDataChanged += ToSumUpItems_OnDataChanged;
+            itemsToSumUp.OnDataChanged += ToSumUpItems_OnDataChanged;
             DataBaseWorker.DataChanged += DataBaseWorker_DataChanged;
         }
 

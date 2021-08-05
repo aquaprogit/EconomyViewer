@@ -177,7 +177,7 @@
                         </Style>
                     </Grid.Resources>
                     <Grid x:Name="Main_Grid"
-                          Visibility="Hidden">
+                          Visibility="Visible">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="2*" />
                             <ColumnDefinition Width="55" />
