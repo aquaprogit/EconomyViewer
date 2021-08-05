@@ -35,6 +35,7 @@ namespace EconomyViewer.ViewModels
             {
                 itemsToSumUp = value;
                 OnPropertyChanged();
+                OnPropertyChanged("ToSumUpResult");
             }
         }
         public Item SelectedItem

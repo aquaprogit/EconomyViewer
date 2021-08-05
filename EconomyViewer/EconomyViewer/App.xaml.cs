@@ -32,7 +32,6 @@ namespace EconomyViewer
         }
         public App()
         {
-            new ForumEconomyParser().GetPostData("Galaxy");
 #if RESEASE
             if (!IsUserAdministrator())
             {
