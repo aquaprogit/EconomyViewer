@@ -20,12 +20,12 @@ namespace EconomyViewer.ViewModels
         {
             get
             {
-                uint res = 0;
+                uint result = 0;
                 foreach (var item in itemsToSumUp)
                 {
-                    res += item.Price;
+                    result += item.Price;
                 }
-                return res;
+                return result;
             }
         }
         public ItemList<Item> ItemsToSumUp
