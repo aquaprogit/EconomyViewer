@@ -120,6 +120,7 @@
     </ApplicationDefinition>
     <Compile Include="Utils\Converters\CountToBoolConverter.cs" />
     <Compile Include="Utils\Converters\ListToDocumentConverter.cs" />
+    <Compile Include="Utils\ForumDataParser.cs" />
     <Compile Include="ViewModels\ItemViewModel.cs" />
     <Compile Include="ViewModels\ServerViewModel.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
