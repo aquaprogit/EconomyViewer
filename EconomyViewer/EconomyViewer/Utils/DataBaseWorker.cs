@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SQLite;
 using System.Diagnostics;
+using System.IO;
 
 namespace EconomyViewer.Utils
 {
     internal static class DataBaseWorker
     {
         private static readonly string connectionString = @"Data Source="
-            + System.IO.Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName)
+            + Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName)
             + "\\economy.db; Version=3;";
         private static SQLiteConnection connection;
 
@@ -24,19 +25,13 @@ namespace EconomyViewer.Utils
 
         public static void CreateDataBase()
         {
-            SQLiteConnection.CreateFile(System.IO.Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName) + "\\economy.db");
+            SQLiteConnection.CreateFile(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName) + "\\economy.db");
             List<string> servers = new List<string>() { "Classic", "Fantasy", "Galaxy", "HiTech", "Industrial", "MagicRPG", "Pixelmon", "SkyFactory", "TechnoMagic" };
-            SQLiteConnection m_dbConnection = new SQLiteConnection(connectionString);
-            m_dbConnection.Open();
-
-            foreach (var item in servers)
+            foreach (var server in servers)
             {
-                string sql = $"CREATE TABLE {item} (\"i_id\" INTEGER NOT NULL DEFAULT 0 UNIQUE,\"i_header\"  TEXT NOT NULL,\"i_count\"   INTEGER NOT NULL DEFAULT 1,\"i_price\"   INTEGER NOT NULL DEFAULT 1,\"i_mod\" TEXT NOT NULL,PRIMARY KEY(\"i_id\"))";
-
-                SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
-                command.ExecuteNonQuery();
+                string query = $"CREATE TABLE {server} (\"i_id\" INTEGER NOT NULL DEFAULT 0 UNIQUE,\"i_header\"  TEXT NOT NULL,\"i_count\"   INTEGER NOT NULL DEFAULT 1,\"i_price\"   INTEGER NOT NULL DEFAULT 1,\"i_mod\" TEXT NOT NULL,PRIMARY KEY(\"i_id\"))";
+                ExecuteCommand(query);
             }
-            m_dbConnection.Close();
         }
         public static void DeleteAllData(string serverName)
         {
@@ -69,7 +64,12 @@ namespace EconomyViewer.Utils
                 SQLiteDataReader reader = command.ExecuteReader();
                 while (reader.Read())
                 {
-                    result.Add(new Item(reader.GetInt32(0), reader.GetString(1), Convert.ToUInt32(reader.GetInt32(2)), Convert.ToUInt32(reader.GetInt32(3)), reader.GetString(4)));
+                    Item item = new Item(reader.GetInt32(0),
+                        reader.GetString(1),
+                        Convert.ToUInt32(reader.GetInt32(2)),
+                        Convert.ToUInt32(reader.GetInt32(3)),
+                        reader.GetString(4));
+                    result.Add(item);
                 }
                 return result;
             }

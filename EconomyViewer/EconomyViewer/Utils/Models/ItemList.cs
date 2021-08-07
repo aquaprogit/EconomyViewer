@@ -25,21 +25,9 @@ namespace EconomyViewer.Utils
         }
         public void Add(Item item)/* TODO REFACTORING NEEDED */
         {
-            if (itemList.Contains(item))
+            Item sameItem = itemList.FirstOrDefault(i => i.Header == item.Header);
+            if (sameItem != null)
             {
-                itemList.Remove(item);
-                Item newItem = new Item()
-                {
-                    Count = item.Count + item.Count,
-                    Price = item.Price + item.Price,
-                    Header = item.Header,
-                    Mod = item.Mod
-                };
-                itemList.Add(newItem);
-            }
-            else if (itemList.Any(i => i.Header == item.Header))
-            {
-                Item sameItem = itemList.Find(i => i.Header == item.Header);
                 if (sameItem.Price / sameItem.Count == item.Price / item.Count)
                 {
                     int index = itemList.IndexOf(sameItem);

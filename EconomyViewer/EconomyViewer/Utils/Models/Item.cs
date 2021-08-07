@@ -104,6 +104,7 @@ namespace EconomyViewer.Utils
         /// <param name="count">Количество предмета.</param>
         /// <param name="price">Стоимость предмета за его количество.</param>
         /// <param name="mod">Модификация предмета.</param>
+        /// <param name="clearToString">Вернёт ли ToString() пустую строку</param>
         public Item(string header, uint count, uint price, string mod, bool clearToString = false)
         {
             this.header = header ?? throw new ArgumentNullException("Header value equals null");
@@ -135,15 +136,10 @@ namespace EconomyViewer.Utils
         {
             if (Regex.IsMatch(value, @"(.+)\s([0-9]+) шт. - ([0-9]+)$"))
             {
-                var comp = Regex.Match(value, @"(.+)\s([0-9]+) шт. - ([0-9]+)$").Groups;
-                string itemName = comp[1].Value;
-                while (itemName.StartsWith(" ") || itemName.StartsWith("\t"))
-                {
-                    itemName = itemName.Remove(0, 1);
-                }
-                uint itemCount = Convert.ToUInt32(comp[2].Value);
-                uint itemPrice = Convert.ToUInt32(comp[3].Value);
-
+                var itemData = Regex.Match(value, @"(.+)\s([0-9]+) шт. - ([0-9]+)$").Groups;
+                string itemName = itemData[1].Value;
+                uint itemCount = Convert.ToUInt32(itemData[2].Value);
+                uint itemPrice = Convert.ToUInt32(itemData[3].Value);
                 return new Item(itemName, itemCount, itemPrice, mod);
             }
             return null;
