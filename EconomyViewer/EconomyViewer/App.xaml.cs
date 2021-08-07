@@ -10,11 +10,17 @@ using System.Security.Principal;
 using System.Text.RegularExpressions;
 using System.Windows;
 <<<<<<< HEAD
+<<<<<<< HEAD
 using System.Windows.Threading;
 =======
 using System.Windows.Documents;
 using System.Windows.Ink;
 >>>>>>> ParsingForumData
+=======
+using System.Windows.Documents;
+using System.Windows.Ink;
+
+>>>>>>> bc4ec0189e7ee135cdda04b9089e7dd656320678
 
 namespace EconomyViewer
 {
