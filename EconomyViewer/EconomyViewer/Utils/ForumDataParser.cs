@@ -1,13 +1,13 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text.RegularExpressions;
+﻿using HtmlAgilityPack;
 
-using HtmlAgilityPack;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace EconomyViewer.Utils
 {
-    internal class ForumEconomyParser
+    internal class ForumDataParser
     {
         public List<Item> GetPostData(string server)
         {
@@ -16,7 +16,7 @@ namespace EconomyViewer.Utils
             HtmlDocument doc = hw.Load(@"https://f.simpleminecraft.ru/index.php?/forum/49-ekonomika/");
             foreach (HtmlNode link in doc.DocumentNode.SelectNodes("//a[@href]").Where(c => c.GetAttributeValue("title", "").StartsWith("Экономика ")))
             {
-                if (link.InnerText.Replace("\n", "") == $"Экономика {server}")
+                if (link.InnerText.Replace("\n", "").Replace("\t", "") == $"Экономика {server}")
                 {
                     HtmlDocument currentDocument = hw.Load(link.GetAttributeValue("href", null));
                     innerHtmlByLine = currentDocument.DocumentNode.SelectNodes("//div")
@@ -30,14 +30,10 @@ namespace EconomyViewer.Utils
                 string thisLine = line;
                 if (thisLine.Contains("Список основных изменений"))
                     break;
-                if (thisLine.StartsWith("<strong>") || thisLine.StartsWith("<span"))
+                if (thisLine.Contains("style=\"font-size:16px;\""))
                 {
-                    if (thisLine.Length > 38)
-                    {
-                        string startWithName = thisLine.Remove(0, 38);
-                        if (Regex.IsMatch(startWithName, @"(.*?)<\S*\s*(span|strong)><\S*\s*(span|strong)>"))
-                            mod = Regex.Match(startWithName, @"(.*?)<\S*\s*(span|strong)><\S*\s*(span|strong)>").Groups[1].Value.Split('/')[0];
-                    }
+                    if (Regex.IsMatch(thisLine, @">(.*?)<"))
+                        mod = Regex.Matches(thisLine, @">(.*?)<")[1].Groups[1].Value;
                 }
                 else
                 {
@@ -49,14 +45,6 @@ namespace EconomyViewer.Utils
                 }
             }
             return items;
-        }
-
-        private string GetHtml(string source)
-        {
-            using (WebClient client = new WebClient())
-            {
-                return client.DownloadString(source);
-            }
         }
     }
 }

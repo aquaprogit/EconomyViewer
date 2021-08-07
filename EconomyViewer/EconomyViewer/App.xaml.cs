@@ -7,8 +7,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Security.Principal;
+using System.Text.RegularExpressions;
 using System.Windows;
+<<<<<<< HEAD
 using System.Windows.Threading;
+=======
+using System.Windows.Documents;
+using System.Windows.Ink;
+>>>>>>> ParsingForumData
 
 namespace EconomyViewer
 {
