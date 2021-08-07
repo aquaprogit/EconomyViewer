@@ -21,8 +21,9 @@ namespace EconomyViewer.Utils
             {
                 itemList.RemoveAt(index);
             }
+            OnDataChanged?.Invoke();
         }
-        public void Add(Item item)
+        public void Add(Item item)/* TODO REFACTORING NEEDED */
         {
             Item sameItem = itemList.FirstOrDefault(i => i.Header == item.Header);
             if (sameItem != null)

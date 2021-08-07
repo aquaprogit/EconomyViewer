@@ -140,7 +140,6 @@ namespace EconomyViewer.Utils
                 string itemName = itemData[1].Value;
                 uint itemCount = Convert.ToUInt32(itemData[2].Value);
                 uint itemPrice = Convert.ToUInt32(itemData[3].Value);
-
                 return new Item(itemName, itemCount, itemPrice, mod);
             }
             return null;
