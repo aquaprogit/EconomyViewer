@@ -136,16 +136,6 @@ namespace EconomyViewer.Utils
         {
             if (Regex.IsMatch(value, @"(.+)\s([0-9]+) шт. - ([0-9]+)$"))
             {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> bc4ec0189e7ee135cdda04b9089e7dd656320678
-                var itemData = Regex.Match(value, @"(.+)\s([0-9]+) шт. - ([0-9]+)$").Groups;
-                string itemName = itemData[1].Value;
-                uint itemCount = Convert.ToUInt32(itemData[2].Value);
-                uint itemPrice = Convert.ToUInt32(itemData[3].Value);
-<<<<<<< HEAD
-=======
                 var comp = Regex.Match(value, @"(.+)\s([0-9]+) шт. - ([0-9]+)$").Groups;
                 string itemName = comp[1].Value;
                 while (itemName.StartsWith(" ") || itemName.StartsWith("\t"))
@@ -154,10 +144,6 @@ namespace EconomyViewer.Utils
                 }
                 uint itemCount = Convert.ToUInt32(comp[2].Value);
                 uint itemPrice = Convert.ToUInt32(comp[3].Value);
->>>>>>> ParsingForumData
-
-=======
->>>>>>> bc4ec0189e7ee135cdda04b9089e7dd656320678
                 return new Item(itemName, itemCount, itemPrice, mod);
             }
             return null;
